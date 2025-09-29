@@ -2,29 +2,217 @@
 <html>
 
 <head>
-    <title>Image Upload Demo</title>
+    <title>File Upload and Camera Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .preview-img {
+            max-width: 400px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        input[type="file"] {
+            margin: 10px 0;
+        }
+
+        #video {
+            max-width: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .file-info {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Upload an Image</h1>
-    <input type="file" id="fileInput" accept="image/*" />
-    <br><br>
-    <img id="preview" style="max-width: 400px; display: none;" />
+    <h1>File Upload and Camera Demo</h1>
+
+    <!-- Section 1: Image Upload -->
+    <div class="section">
+        <h2>1. Upload an Image File</h2>
+        <input type="file" id="imageInput" accept="image/*" />
+        <br>
+        <img id="imagePreview" class="preview-img" style="display: none;" />
+    </div>
+
+    <!-- Section 2: General File Upload -->
+    <div class="section">
+        <h2>2. Upload Any File</h2>
+        <input type="file" id="fileInput" />
+        <div id="fileInfo" class="file-info">
+            <p><strong>File:</strong> <span id="fileName"></span></p>
+            <p><strong>Size:</strong> <span id="fileSize"></span></p>
+            <p><strong>Type:</strong> <span id="fileType"></span></p>
+            <button id="downloadBtn" disabled>Download File</button>
+        </div>
+    </div>
+
+    <!-- Section 3: Camera Capture -->
+    <div class="section">
+        <h2>3. Capture Photo with Camera</h2>
+        <button id="startCamera">Start Camera</button>
+        <button id="capturePhoto" disabled>Capture Photo</button>
+        <button id="stopCamera" disabled>Stop Camera</button>
+        <br><br>
+        <video id="video" autoplay style="display: none;"></video>
+        <br>
+        <img id="cameraPreview" class="preview-img" style="display: none;" />
+        <canvas id="canvas" style="display: none;"></canvas>
+    </div>
 
     <script>
-        const input = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
+        // Section 1: Image Upload
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
 
-        input.addEventListener('change', () => {
-            const file = input.files[0];
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
             };
             reader.readAsDataURL(file);
+        });
+
+        // Section 2: General File Upload
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileType = document.getElementById('fileType');
+        const downloadBtn = document.getElementById('downloadBtn');
+        let uploadedFile = null;
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                fileInfo.style.display = 'none';
+                return;
+            }
+
+            uploadedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileType.textContent = file.type || 'Unknown';
+            fileInfo.style.display = 'block';
+            downloadBtn.disabled = false;
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            if (!uploadedFile) return;
+
+            const url = URL.createObjectURL(uploadedFile);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = uploadedFile.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Section 3: Camera Capture
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const startCameraBtn = document.getElementById('startCamera');
+        const capturePhotoBtn = document.getElementById('capturePhoto');
+        const stopCameraBtn = document.getElementById('stopCamera');
+        let stream = null;
+
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                startCameraBtn.disabled = true;
+                capturePhotoBtn.disabled = false;
+                stopCameraBtn.disabled = false;
+            } catch (err) {
+                alert('Error accessing camera: ' + err.message);
+            }
+        });
+
+        capturePhotoBtn.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+
+            const dataURL = canvas.toDataURL('image/png');
+            cameraPreview.src = dataURL;
+            cameraPreview.style.display = 'block';
+        });
+
+        stopCameraBtn.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.srcObject = null;
+                video.style.display = 'none';
+                startCameraBtn.disabled = false;
+                capturePhotoBtn.disabled = true;
+                stopCameraBtn.disabled = true;
+            }
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
         });
     </script>
 </body>
