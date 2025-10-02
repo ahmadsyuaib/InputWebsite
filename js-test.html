@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>JavaScript On/Off Test</title>
+</head>
+
+<body>
+    <h1>JavaScript Enable/Disable Test Page</h1>
+
+    <h2>1. Static Content (Always Visible)</h2>
+    <p>This text is written in HTML and will always be visible regardless of JavaScript status.</p>
+
+    <h2>2. JavaScript-Generated Content</h2>
+    <div id="js-content">
+        <noscript>
+            <p style="color: red; font-weight: bold;">❌ JavaScript is DISABLED - This message shows when JS is off</p>
+        </noscript>
+    </div>
+
+    <h2>3. Interactive Elements</h2>
+
+    <h3>Button Click Test:</h3>
+    <button onclick="showAlert()">Click Me (Requires JS)</button>
+    <p id="click-result">No clicks yet</p>
+
+    <h3>Form Input Test:</h3>
+    <input type="text" id="textInput" placeholder="Type something here">
+    <button onclick="copyText()">Copy Text Below (Requires JS)</button>
+    <p id="output">Copied text will appear here</p>
+
+    <h3>Counter Test:</h3>
+    <button onclick="increment()">Count Up (Requires JS)</button>
+    <button onclick="decrement()">Count Down (Requires JS)</button>
+    <p>Counter: <span id="counter">0</span></p>
+
+    <h3>Dynamic Styling Test:</h3>
+    <button onclick="toggleBackground()">Change Background Color (Requires JS)</button>
+    <div id="colorBox" style="width: 200px; height: 100px; border: 1px solid black; background-color: lightblue;">
+        Color Box
+    </div>
+
+    <h2>4. Instructions</h2>
+    <p><strong>To test:</strong></p>
+    <ul>
+        <li><strong>Chrome/Edge:</strong> Press F12 → Settings (gear icon) → Debugger → Disable JavaScript</li>
+        <li><strong>Firefox:</strong> Type "about:config" → search "javascript.enabled" → set to false</li>
+        <li><strong>Or use browser developer tools to disable JS</strong></li>
+    </ul>
+
+    <p><strong>Expected Results:</strong></p>
+    <ul>
+        <li><strong>JS Enabled:</strong> Buttons work, text changes, interactions happen</li>
+        <li><strong>JS Disabled:</strong> Buttons do nothing, red warning message appears, no interactions</li>
+    </ul>
+
+    <script>
+        // This entire script block will not execute if JavaScript is disabled
+
+        // Show that JavaScript is enabled
+        document.getElementById('js-content').innerHTML =
+            '<p style="color: green; font-weight: bold;">✅ JavaScript is ENABLED - This message shows when JS is on</p>';
+
+        let count = 0;
+
+        function showAlert() {
+            alert('JavaScript is working! Button click detected.');
+            document.getElementById('click-result').textContent = 'Button was clicked at ' + new Date().toLocaleTimeString();
+        }
+
+        function copyText() {
+            const input = document.getElementById('textInput').value;
+            document.getElementById('output').textContent = 'You typed: ' + input;
+        }
+
+        function increment() {
+            count++;
+            document.getElementById('counter').textContent = count;
+        }
+
+        function decrement() {
+            count--;
+            document.getElementById('counter').textContent = count;
+        }
+
+        function toggleBackground() {
+            const colorBox = document.getElementById('colorBox');
+            const colors = ['lightblue', 'lightgreen', 'lightyellow', 'lightpink', 'lightgray'];
+            const currentColor = colorBox.style.backgroundColor;
+            const currentIndex = colors.indexOf(currentColor);
+            const nextIndex = (currentIndex + 1) % colors.length;
+            colorBox.style.backgroundColor = colors[nextIndex];
+        }
+
+        // Add real-time clock to show dynamic updates
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('clock').textContent = timeString;
+        }
+
+        // Add clock element
+        document.body.innerHTML += '<h2>5. Real-time Clock (Requires JS)</h2><p>Current time: <span id="clock">Clock not working - JS disabled</span></p>';
+
+        // Update clock every second
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call
+    </script>
+</body>
+
+</html>
