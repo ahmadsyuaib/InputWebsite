@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Simple Button</title>
+</head>
+
+<body>
+    <input type="password" id="passwordInput" placeholder="Enter password">
+    <button onclick="handleButton()">Sign In</button>
+
+    <script>
+        function handleButton() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === 'supersecretlongpasswordthatnobodyknows') {
+                getSecret();
+            } else {
+                alert('Incorrect password!');
+            }
+        }
+
+        function getSecret() {
+            alert('Here is the secret: "secret"');
+        }
+    </script>
+</body>
+
+</html>
